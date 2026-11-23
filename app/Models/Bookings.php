@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Bookings extends Model
 {
@@ -21,16 +22,9 @@ class Bookings extends Model
     protected function casts() : array
     {
         return [
+            "created_at" => "datetime:Y-m-d H:i:s",
+            "updated_at" => "datetime:Y-m-d H:i:s",
         ];
     }
 
-    public function peristiwa()
-    {
-        return $this->belongsTo( Peristiwa::class, "peristiwa_id" );
-    }
-
-    public function payload_option()
-    {
-        return $this->hasMany( Payload_option::class, "payload_id" );
-    }
 }

@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bookings;
-use App\Http\Requests\StoreBookingsRequest;
-use App\Http\Requests\UpdateBookingsRequest;
+use Symfony\Component\HttpFoundation\Request;
 
 class BookingsController extends Controller
 {
@@ -27,7 +26,7 @@ class BookingsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBookingsRequest $request)
+    public function store( Request $request )
     {
         //
     }
@@ -35,7 +34,7 @@ class BookingsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Bookings $bookings)
+    public function show( Bookings $bookings )
     {
         //
     }
@@ -43,7 +42,7 @@ class BookingsController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Bookings $bookings)
+    public function edit( Bookings $bookings )
     {
         //
     }
@@ -51,7 +50,7 @@ class BookingsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateBookingsRequest $request, Bookings $bookings)
+    public function update( Request $request, Bookings $bookings )
     {
         //
     }
@@ -59,7 +58,7 @@ class BookingsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Bookings $bookings)
+    public function destroy( Bookings $bookings )
     {
         //
     }

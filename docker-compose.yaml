@@ -1,0 +1,30 @@
+services:
+  mysqldb:
+    image: mysql:latest
+    restart: always
+    env_file: ./.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=$DB_PASSWORD
+      - MYSQL_DATABASE=$DB_NAME
+    volumes:
+      - ./setup.sql:/docker-entrypoint-initdb.d/init.sql
+      - db:/var/lib/mysql
+
+  app:
+    depends_on:
+      - mysqldb
+    build: .
+    restart: always
+    env_file: ./.env
+    ports:
+      - $PORT:3000
+    environment:
+      - DB_HOST=$DB_HOST
+      - DB_USER=$DB_USERNAME
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_NAME=$DB_DATABASE
+      - DB_PORT=$DB_PORT
+    links:
+      - mysqldb:mysqldb
+volumes:
+  db:

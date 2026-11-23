@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -11,6 +12,7 @@ class Rooms extends Model
     /** @use HasFactory<\Database\Factories\RoomsFactory> */
     use HasFactory;
 
+    public $incrementing = TRUE;
     protected $fillable = [
         'id',
         'name',
@@ -25,10 +27,9 @@ class Rooms extends Model
         ];
     }
 
-
-    public function user() : BelongsToMany
+    function bookings()
     {
-        return $this->belongsToMany( Rooms::class, "bookings" );
+        return $this->belongsTo( Bookings::class);
     }
 
 }

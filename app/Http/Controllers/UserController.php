@@ -21,10 +21,12 @@ class UserController extends Controller
         }
         catch ( \Throwable $th )
         {
-            return response( "erorr", 400 );
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg, $th->getCode() );
         }
-
-
     }
     /**
      * Store a newly created resource in storage.
@@ -33,17 +35,26 @@ class UserController extends Controller
     {
         try
         {
-            User::updateOrCreate( [ "id" => $request->id ], [
+            $insertData = [
                 'name'       => $request->name,
                 'email'      => $request->email,
                 'password'   => $request->password,
                 'role'       => $request->role,
                 'updated_at' => Carbon::now(),
-            ] );
+            ];
+            if( empty( $request->id ) )
+            {
+                $insertData["created_at"] = Carbon::now();
+            }
+            User::updateOrCreate( [ "id" => $request->id ], $insertData );
         }
         catch ( \Throwable $th )
         {
-            return response()->json( $th->getMessage() );
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg, $th->getCode() );
         }
         return response( [ "status" => TRUE ], 200, [ "Content-Type" => "application/json" ] );
 
@@ -54,8 +65,20 @@ class UserController extends Controller
      */
     public function show( string $id )
     {
-        $data = User::where( "id", "=", $id )->get();
-        return new ApiResource( $data );
+        try
+        {
+            $data = User::where( "id", "=", $id )->get();
+            return new ApiResource( $data );
+        }
+        catch ( \Throwable $th )
+        {
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg, $th->getCode() );
+        }
+
     }
     /**
      * Remove the specified resource from storage.
@@ -68,8 +91,44 @@ class UserController extends Controller
         }
         catch ( \Throwable $th )
         {
-            return response()->json( $th->getMessage() );
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg, $th->getCode() );
         }
         return response( [ "status" => TRUE ], 200, [ "Content-Type" => "application/json" ] );
+    }
+
+    function login( Request $request )
+    {
+        try
+        {
+            $credentials = request( [ 'email', 'password' ] );
+            if( ! $token = auth( "api" )->attempt( $credentials ) )
+            {
+                return response()->json( [ 'error' => 'Unauthorized' ], 401 );
+            }
+
+            return $this->respondWithToken( $token );
+        }
+        catch ( \Throwable $th )
+        {
+            return response()->json( $th->getMessage() );
+        }
+
+    }
+    function logout( Request $request )
+    {
+        auth()->logout();
+        return response()->json( [ 'message' => 'Successfully logged out' ] );
+    }
+    protected function respondWithToken( $token )
+    {
+        return response()->json( [
+            'access_token' => $token,
+            'token_type'   => 'bearer',
+            'expires_in'   => auth( "api" )->factory()->getTTL() * 60
+        ] );
     }
 }

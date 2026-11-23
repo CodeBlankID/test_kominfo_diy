@@ -21,10 +21,12 @@ class RoomsController extends Controller
         }
         catch ( \Throwable $th )
         {
-            return response( "erorr", 400 );
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg, $th->getCode() );
         }
-
-
     }
     /**
      * Store a newly created resource in storage.
@@ -33,16 +35,25 @@ class RoomsController extends Controller
     {
         try
         {
-            Rooms::updateOrCreate( [ "id" => $request->id ], [
+            $insertData = [
                 'name'       => $request->name,
                 'capacity'   => $request->capacity,
                 'is_active'  => $request->is_active,
                 'updated_at' => Carbon::now(),
-            ] );
+            ];
+            if( empty( $request->id ) )
+            {
+                $insertData["created_at"] = Carbon::now();
+            }
+            Rooms::updateOrCreate( [ "id" => $request->id ], $insertData );
         }
         catch ( \Throwable $th )
         {
-            return response()->json( $th->getMessage() );
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg, $th->getCode() );
         }
         return response( [ "status" => TRUE ], 200, [ "Content-Type" => "application/json" ] );
 
@@ -53,8 +64,20 @@ class RoomsController extends Controller
      */
     public function show( string $id )
     {
-        $data = Rooms::where( "id", "=", $id )->get();
-        return new ApiResource( $data );
+        try
+        {
+            $data = Rooms::where( "id", "=", $id )->get();
+            return new ApiResource( $data );
+        }
+        catch ( \Throwable $th )
+        {
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg, $th->getCode() );
+        }
+
     }
     /**
      * Remove the specified resource from storage.
@@ -67,7 +90,11 @@ class RoomsController extends Controller
         }
         catch ( \Throwable $th )
         {
-            return response()->json( $th->getMessage() );
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg, $th->getCode() );
         }
         return response( [ "status" => TRUE ], 200, [ "Content-Type" => "application/json" ] );
     }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ApiResource;
 use App\Models\Bookings;
+use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\Request;
 
 class BookingsController extends Controller
@@ -12,15 +14,20 @@ class BookingsController extends Controller
      */
     public function index()
     {
-        //
-    }
+        try
+        {
+            $data = Bookings::with( "rooms", "users" )->get();
+            return new ApiResource( $data );
+        }
+        catch ( \Throwable $th )
+        {
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg, $th->getCode() );
+        }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -28,38 +35,72 @@ class BookingsController extends Controller
      */
     public function store( Request $request )
     {
-        //
+        try
+        {
+            $insertData = [
+                'room_id'    => $request->room_id,
+                'user_id'    => $request->user_id,
+                'title'      => $request->title,
+                'start_time' => $request->start_time,
+                'end_time'   => $request->end_time,
+                'status'     => $request->status,
+                'updated_at' => Carbon::now(),
+            ];
+            if( empty( $request->id ) )
+            {
+                $insertData["created_at"] = Carbon::now();
+            }
+            Bookings::updateOrCreate( [ "id" => $request->id ], $insertData );
+        }
+        catch ( \Throwable $th )
+        {
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg );
+        }
+        return response( [ "status" => TRUE ], 200, [ "Content-Type" => "application/json" ] );
+
     }
 
     /**
      * Display the specified resource.
      */
-    public function show( Bookings $bookings )
+    public function show( string $id )
     {
-        //
-    }
+        try
+        {
+            $data = Bookings::with( "rooms", "users" )->where( "id", "=", $id )->get();
+            return new ApiResource( $data );
+        }
+        catch ( \Throwable $th )
+        {
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg, $th->getCode() );
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit( Bookings $bookings )
-    {
-        //
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update( Request $request, Bookings $bookings )
-    {
-        //
-    }
-
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy( Bookings $bookings )
+    public function destroy( string $id )
     {
-        //
+        try
+        {
+            Bookings::destroy( $id );
+        }
+        catch ( \Throwable $th )
+        {
+            $dataMsg = [
+                [ "error_code" => $th->getCode() ],
+                [ "message" => $th->getMessage() ],
+            ];
+            return response()->json( $dataMsg );
+        }
+        return response( [ "status" => TRUE ], 200, [ "Content-Type" => "application/json" ] );
     }
 }
